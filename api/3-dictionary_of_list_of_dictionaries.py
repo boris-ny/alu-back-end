@@ -1,29 +1,42 @@
 #!/usr/bin/python3
-
-'''Using what you did in the task #0, extend your Python script to export data in the JSON format.'''
+"""Module"""
 
 import json
 import requests
-import sys
 
-if __name__ == '__main__':
-    user_id = sys.argv[1]
+
+def get_employee_task(employee_id):
+    """Doc"""
     user_url = "https://jsonplaceholder.typicode.com/users/{}" \
-        .format(user_id)
-    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
-        .format(user_id)
+        .format(employee_id)
 
     user_info = requests.request('GET', user_url).json()
+
+    employee_username = user_info["username"]
+    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
+        .format(employee_id)
     todos_info = requests.request('GET', todos_url).json()
+    return [
+        dict(zip(["task", "completed", "username"],
+                 [task["title"], task["completed"], employee_username]))
+        for task in todos_info]
 
-    employee_name = user_info["name"]
-    task_completed = list(filter(lambda obj:
-                                 (obj["completed"] is True), todos_info))
-    number_of_done_tasks = len(task_completed)
-    total_number_of_tasks = len(todos_info)
 
-    with open('{}.json'.format(user_id), 'w') as jsonfile:
-        json.dump({user_id: [{"task": task["title"],
-                              "completed": task["completed"],
-                              "username": user_info["username"]}
-                             for task in todos_info]}, jsonfile)
+def get_employee_ids():
+    """Doc"""
+    users_url = "https://jsonplaceholder.typicode.com/users/"
+
+    users_info = requests.request('GET', users_url).json()
+    ids = list(map(lambda user: user["id"], users_info))
+    return ids
+
+
+if __name__ == '__main__':
+
+    employee_ids = get_employee_ids()
+
+    with open('todo_all_employees.json', "w") as file:
+        all_users = {}
+        for employee_id in employee_ids:
+            all_users[str(employee_id)] = get_employee_task(employee_id)
+        file.write(json.dumps(all_users))
