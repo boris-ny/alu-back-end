@@ -13,14 +13,12 @@ if __name__ == "__main__":
     todo_url = 'https://jsonplaceholder.typicode.com//users/{}/todos/'\
         .format(user_id)
     todo = requests.get(todo_url).json()
+    employee_name = user.get('name')
+    total_tasks = list(filter(lanbda x: x.get('completed') is True, todo))
+    tasks_completed = len(total_tasks)
+    total_number_of_tasks = len(todo)
 
-    done = []
-
-    for task in todo:
-        if task.get('completed') is True:
-            done.append(task)
     print('Employee {} is done with tasks({}/{}):'\
-          .format(user.get('name'), len(done), len(todo)))
-
-    for task in done:
-        print('\t {}' .format(task.get('title')))
+        .format(employee_name, tasks_completed, total_number_of_tasks))
+    
+    [print('\t' + task["title"]) for task in total_tasks]
